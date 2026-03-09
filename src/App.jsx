@@ -50,7 +50,7 @@ export default function App() {
       case "scan": return <Scan addPoints={addPoints} />;
       case "rewards": return <Rewards points={points} redeemPoints={redeemPoints} redeemedCoupons={redeemedCoupons} />;
       case "map": return <MapPage setActiveTab={setActiveTab} />;
-      case "profile": return <Profile points={points} bottles={bottles} setActiveTab={setActiveTab} redeemedCoupons={redeemedCoupons} notifications={notifications} />;
+      case "profile": return <Profile points={points} bottles={bottles} setActiveTab={setActiveTab} redeemedCoupons={redeemedCoupons} notifications={notifications} onLogout={() => setScreen("login")} />;
       case "wallet": return <Wallet points={points} setActiveTab={setActiveTab} />;
       case "gamification": return <Gamification bottles={bottles} setActiveTab={setActiveTab} />;
       case "campaigns": return <Campaigns setActiveTab={setActiveTab} />;

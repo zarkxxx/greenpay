@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { user } from "../data/mockData";
 
-export default function Profile({ points, bottles, setActiveTab, redeemedCoupons, notifications }) {
+export default function Profile({ points, bottles, setActiveTab, redeemedCoupons, notifications, onLogout }) {
   const [showReferral, setShowReferral] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -88,8 +88,8 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
           ))}
         </div>
 
-        <button className="btn-ghost" style={{ width: "100%", color: "var(--red)", borderColor: "rgba(239,68,68,0.3)", marginBottom: 40 }}>
-          Log Out
+        <button className="btn-ghost" style={{ width: "100%", color: "var(--red)", borderColor: "rgba(239,68,68,0.3)", marginBottom: 40 }} onClick={onLogout}>
+        Log Out
         </button>
       </div>
 
