@@ -4,14 +4,14 @@ export default function Login({ onLogin }) {
       <div className="logo-area">
         <div className="logo-icon">🌿</div>
         <div>
-          <div style={{ fontFamily: "Syne, sans-serif", fontSize: 22, fontWeight: 800 }}>GreenPay</div>
+          <div style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 22, fontWeight: 800 }}>GreenPay</div>
           <div style={{ fontSize: 12, color: "var(--text3)" }}>Recycle. Earn. Redeem.</div>
         </div>
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 16 }}>
         <div style={{ marginBottom: 8 }}>
-          <div style={{ fontFamily: "Syne, sans-serif", fontSize: 28, fontWeight: 800, lineHeight: 1.2 }}>
+          <div style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 28, fontWeight: 800, lineHeight: 1.2 }}>
             Welcome back 🌱
           </div>
           <div style={{ fontSize: 15, color: "var(--text2)", marginTop: 8 }}>

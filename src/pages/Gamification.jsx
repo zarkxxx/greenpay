@@ -28,12 +28,12 @@ export default function Gamification({ bottles, setActiveTab }) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <div>
               <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.8px" }}>Current Level</div>
-              <div style={{ fontFamily: "Syne, sans-serif", fontSize: 24, fontWeight: 800, color: currentLevel.color }}>
+              <div style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 24, fontWeight: 800, color: currentLevel.color }}>
                 {currentLevel.name}
               </div>
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontFamily: "Syne, sans-serif", fontSize: 32, fontWeight: 800, color: "white" }}>{bottles}</div>
+              <div style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 32, fontWeight: 800, color: "white" }}>{bottles}</div>
               <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>bottles</div>
             </div>
           </div>
@@ -72,7 +72,7 @@ export default function Gamification({ bottles, setActiveTab }) {
                   width: 36, height: 36, borderRadius: "50%",
                   background: entry.isUser ? "var(--green)" : "var(--card2)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 13
+                  fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 13
                 }}>
                   {entry.name.charAt(0)}
                 </div>
@@ -81,7 +81,7 @@ export default function Gamification({ bottles, setActiveTab }) {
                     {entry.name} {entry.isUser && <span className="tag tag-green" style={{ fontSize: 10 }}>You</span>}
                   </div>
                 </div>
-                <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 16, color: entry.isUser ? "var(--green-light)" : "var(--text)" }}>
+                <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 16, color: entry.isUser ? "var(--green-light)" : "var(--text)" }}>
                   {entry.bottles} 🍾
                 </div>
               </div>
@@ -111,7 +111,7 @@ export default function Gamification({ bottles, setActiveTab }) {
               }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 16, color: l.color }}>{l.name}</div>
+                    <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 16, color: l.color }}>{l.name}</div>
                     <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 2 }}>{l.min}–{l.max} bottles</div>
                   </div>
                   {l.name === currentLevel.name && <span className="tag tag-green">Current</span>}

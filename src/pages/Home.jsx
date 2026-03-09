@@ -11,7 +11,7 @@ export default function Home({ points, bottles, setActiveTab }) {
       <div style={{ padding: "52px 20px 0", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
           <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 2 }}>📍 {user.city}</div>
-          <div style={{ fontFamily: "Syne, sans-serif", fontSize: 24, fontWeight: 800 }}>
+          <div style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 24, fontWeight: 800 }}>
             Hello, {user.name} 🌱
           </div>
           <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 2 }}>You're making a difference</div>
@@ -24,7 +24,7 @@ export default function Home({ points, bottles, setActiveTab }) {
             width: 42, height: 42, borderRadius: "50%",
             background: "linear-gradient(135deg, var(--green), var(--green-dim))",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 16, color: "white"
+            fontFamily: "Space Grotesk, sans-serif", fontWeight: 800, fontSize: 16, color: "white"
           }}>M</div>
         </button>
       </div>
@@ -115,7 +115,7 @@ export default function Home({ points, bottles, setActiveTab }) {
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
               <div>
-                <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 15 }}>Daily Dash 🔥</div>
+                <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 15 }}>Daily Dash 🔥</div>
                 <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 2 }}>Recycle 10 bottles today</div>
               </div>
               <span className="tag tag-green">+50 pts</span>

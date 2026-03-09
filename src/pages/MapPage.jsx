@@ -48,7 +48,7 @@ export default function MapPage({ setActiveTab }) {
                     🗑️
                   </div>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>{m.name}</div>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: "var(--text)" }}>{m.name}</div>
                     <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 1 }}>{m.id} · {m.distance}</div>
                   </div>
                 </div>

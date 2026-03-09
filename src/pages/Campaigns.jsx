@@ -19,7 +19,7 @@ export default function Campaigns({ setActiveTab }) {
             <div key={c.id} className="campaign-card active">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                 <div>
-                  <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 17 }}>{c.title}</div>
+                  <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 17 }}>{c.title}</div>
                   <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 3 }}>{c.desc}</div>
                 </div>
                 <span className="tag tag-gold">{c.reward}</span>

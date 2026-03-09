@@ -52,7 +52,7 @@ export default function Scan({ addPoints }) {
             }} />
           ))}
         </div>
-        <div style={{ fontFamily: "Syne, sans-serif", fontSize: 18, fontWeight: 700, color: "var(--text2)" }}>
+        <div style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 18, fontWeight: 700, color: "var(--text2)" }}>
           Scanning QR Code...
         </div>
       </div>
@@ -65,7 +65,7 @@ export default function Scan({ addPoints }) {
         <div className="success-circle">✅</div>
         <div>
           <div className="success-pts">+5 GreenPoints</div>
-          <div style={{ fontFamily: "Syne, sans-serif", fontSize: 20, fontWeight: 700, marginTop: 4 }}>
+          <div style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 20, fontWeight: 700, marginTop: 4 }}>
             Bottle Recycled!
           </div>
         </div>
@@ -94,7 +94,7 @@ export default function Scan({ addPoints }) {
         <button className="scan-option" onClick={handleScan}>
           <div className="scan-icon-wrap">📷</div>
           <div>
-            <div style={{ fontWeight: 600, fontSize: 15 }}>Scan QR Code</div>
+            <div style={{ fontWeight: 600, fontSize: 15, color: "var(--text)" }}>Scan QR Code</div>
             <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 2 }}>Point camera at the machine QR</div>
           </div>
           <div style={{ marginLeft: "auto", color: "var(--text3)" }}>›</div>
@@ -104,7 +104,7 @@ export default function Scan({ addPoints }) {
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
             <div className="scan-icon-wrap">🔢</div>
             <div>
-              <div style={{ fontWeight: 600, fontSize: 15 }}>Enter Machine Code</div>
+              <div style={{ fontWeight: 600, fontSize: 15, color: "var(--text)" }}>Enter Machine Code</div>
               <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 2 }}>Type the ID shown on machine</div>
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function Scan({ addPoints }) {
         <button className="scan-option" style={{ opacity: 0.5 }}>
           <div className="scan-icon-wrap">📶</div>
           <div>
-            <div style={{ fontWeight: 600, fontSize: 15 }}>NFC Tap</div>
+            <div style={{ fontWeight: 600, fontSize: 15, color: "var(--text)" }}>NFC Tap</div>
             <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 2 }}>Tap your phone on the machine</div>
           </div>
           <span className="tag tag-gray" style={{ marginLeft: "auto" }}>Soon</span>

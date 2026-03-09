@@ -80,7 +80,7 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
           {/* Balance strip */}
           <div style={{ background: "rgba(22,163,74,0.08)", border: "1px solid rgba(22,163,74,0.2)", borderRadius: 12, padding: "12px 16px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: 14, color: "var(--text2)" }}>Your balance</span>
-            <span style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18, color: "var(--green-light)" }}>
+            <span style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 800, fontSize: 18, color: "var(--green-light)" }}>
               {points.toLocaleString()} GP
             </span>
           </div>
@@ -133,7 +133,7 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
                 {modal.brand.slice(0, 2).toUpperCase()}
               </div>
               <div>
-                <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18 }}>{modal.title}</div>
+                <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 18 }}>{modal.title}</div>
                 <div style={{ fontSize: 13, color: "var(--text2)" }}>{modal.brand}</div>
               </div>
             </div>

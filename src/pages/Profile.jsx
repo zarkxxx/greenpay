@@ -23,12 +23,12 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
             width: 64, height: 64, borderRadius: "50%",
             background: "linear-gradient(135deg, var(--green), var(--green-dim))",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 26, color: "white"
+            fontFamily: "Space Grotesk, sans-serif", fontWeight: 800, fontSize: 26, color: "white"
           }}>
             {user.name.charAt(0)}
           </div>
           <div>
-            <div style={{ fontFamily: "Syne, sans-serif", fontSize: 20, fontWeight: 800 }}>{user.name} Sheth</div>
+            <div style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 20, fontWeight: 800 }}>{user.name} Sheth</div>
             <div style={{ fontSize: 13, color: "var(--text2)" }}>{user.email}</div>
             <div style={{ fontSize: 12, color: "var(--text3)" }}>ID: {user.walletId}</div>
           </div>
@@ -42,7 +42,7 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
             { label: "Level", val: "Bronze" },
           ].map(s => (
             <div key={s.label} className="card" style={{ textAlign: "center", padding: "14px 10px" }}>
-              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 18, color: "var(--green-light)" }}>{s.val}</div>
+              <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 800, fontSize: 18, color: "var(--green-light)" }}>{s.val}</div>
               <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{s.label}</div>
             </div>
           ))}
@@ -50,14 +50,14 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
 
         {/* Impact summary */}
         <div style={{ background: "rgba(22,163,74,0.06)", border: "1px solid rgba(22,163,74,0.15)", borderRadius: 14, padding: 16, marginBottom: 24 }}>
-          <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 14, marginBottom: 12 }}>🌍 Your Total Impact</div>
+          <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 14, marginBottom: 12 }}>🌍 Your Total Impact</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {[
               { val: `${plastic} kg`, label: "Plastic Diverted" },
               { val: `${co2} kg`, label: "CO₂ Saved" },
             ].map(s => (
               <div key={s.label}>
-                <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, color: "var(--green-light)" }}>{s.val}</div>
+                <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 800, fontSize: 20, color: "var(--green-light)" }}>{s.val}</div>
                 <div style={{ fontSize: 12, color: "var(--text3)" }}>{s.label}</div>
               </div>
             ))}
@@ -99,7 +99,7 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
           <div className="modal-sheet" onClick={e => e.stopPropagation()}>
             <div style={{ textAlign: "center", marginBottom: 20 }}>
               <div style={{ fontSize: 40, marginBottom: 8 }}>👥</div>
-              <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 22 }}>Refer & Earn</div>
+              <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 800, fontSize: 22 }}>Refer & Earn</div>
               <div style={{ fontSize: 14, color: "var(--text2)", marginTop: 6 }}>
                 Invite friends — both get 100 GreenPoints when they recycle their first bottle
               </div>
@@ -109,7 +109,7 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
               borderRadius: 12, padding: 16, textAlign: "center", marginBottom: 16
             }}>
               <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 4 }}>Your referral code</div>
-              <div style={{ fontFamily: "Syne, sans-serif", fontSize: 28, fontWeight: 800, color: "var(--green-light)", letterSpacing: 2 }}>
+              <div style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 28, fontWeight: 800, color: "var(--green-light)", letterSpacing: 2 }}>
                 {user.referralCode}
               </div>
             </div>
