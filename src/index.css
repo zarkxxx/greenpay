@@ -44,7 +44,7 @@ body {
   width: 100%;
   height: 100vh;
   position: relative;
-  display: flex;
+  margin: 0 auto;
 }
 
 .app-shell {
@@ -663,6 +663,8 @@ body {
   display: flex;
   flex-direction: column;
   padding: 60px 24px 48px;
+  max-width: 430px;
+  margin: 0 auto;
 }
 .logo-area {
   display: flex;
