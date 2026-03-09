@@ -1,6 +1,6 @@
 export default function Login({ onLogin }) {
   return (
-    <div className="login-page">
+    <div className="login-page" style={{ justifyContent: "flex-start", paddingTop: 80 }}>
       <div className="logo-area">
         <div className="logo-icon">🌿</div>
         <div>
@@ -9,7 +9,7 @@ export default function Login({ onLogin }) {
         </div>
       </div>
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 16 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 48 }}>
         <div style={{ marginBottom: 8 }}>
           <div style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 28, fontWeight: 800, lineHeight: 1.2 }}>
             Welcome back 🌱
