@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 export default function Profile({ points, bottles, setActiveTab, redeemedCoupons, onLogout, user, isDemoMode }) {
   const [showReferral, setShowReferral] = useState(false);
@@ -12,8 +12,9 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
   const email = user?.email || "";
   const avatar = user?.avatar || null;
   const initials = name.charAt(0).toUpperCase();
-  const referralCode = useMemo(() => 
-  `GP-${name.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, "")}${Math.random().toString(36).substr(2, 3).toUpperCase()}`,
+
+  const referralCode = useMemo(() =>
+    `GP-${name.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, "")}${Math.random().toString(36).substr(2, 3).toUpperCase()}`,
   [name]);
 
   const copyCode = () => {
@@ -25,14 +26,12 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
   const level = bottles >= 1000 ? "Legend" : bottles >= 500 ? "Gold" : bottles >= 100 ? "Silver" : "Bronze";
   const levelColor = { Legend: "#F59E0B", Gold: "#EAB308", Silver: "#9CA3AF", Bronze: "#CD7F32" }[level];
 
-  // Only non-donate coupons count as redeemable coupons
   const couponCount = redeemedCoupons.filter(c => c.category !== "donate").length;
 
   return (
     <div className="page">
       <div style={{ padding: "52px 20px 0" }}>
 
-        {/* Profile header */}
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
           {avatar ? (
             <img src={avatar} alt={name} style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--green)" }} />
@@ -51,7 +50,6 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
           </div>
         </div>
 
-        {/* Stats row */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 24 }}>
           {[
             { label: "Bottles", val: bottles },
@@ -65,7 +63,6 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
           ))}
         </div>
 
-        {/* Impact */}
         <div style={{ background: "rgba(22,163,74,0.06)", border: "1px solid rgba(22,163,74,0.15)", borderRadius: 14, padding: 16, marginBottom: 24 }}>
           <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 14, marginBottom: 12 }}>🌍 Your Total Impact</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
@@ -82,7 +79,6 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
           </div>
         </div>
 
-        {/* Menu */}
         <div className="card" style={{ padding: "4px 16px", marginBottom: 16 }}>
           {[
             { icon: "🎫", label: "My Coupons", badge: couponCount || null, action: () => setActiveTab("coupons") },
@@ -113,7 +109,6 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
         </button>
       </div>
 
-      {/* Referral modal */}
       {showReferral && (
         <div className="modal-overlay" onClick={() => setShowReferral(false)}>
           <div className="modal-sheet" onClick={e => e.stopPropagation()}>
