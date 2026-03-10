@@ -1,26 +1,68 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { rewards } from "../data/mockData";
+import { useAuth } from "../lib/AuthContext";
+import { db } from "../lib/firebase";
+import { collection, addDoc, getDocs, serverTimestamp, query, orderBy } from "firebase/firestore";
 
 export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
   const [cat, setCat] = useState("all");
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState(null);
-  const [view, setView] = useState("marketplace"); // marketplace | coupons
+  const [view, setView] = useState("marketplace");
+  const [firestoreCoupons, setFirestoreCoupons] = useState([]);
+
+  const { user } = useAuth();
+  const isDemoMode = localStorage.getItem("gp_demo_mode") === "true";
 
   const cats = ["all", "food", "shopping", "cash", "donate"];
-
   const filtered = rewards.filter(r => cat === "all" || r.category === cat);
+
+  useEffect(() => {
+    if (user && !isDemoMode) {
+      getDocs(query(collection(db, "profiles", user.uid, "coupons"), orderBy("redeemedAt", "desc")))
+        .then(snap => setFirestoreCoupons(snap.docs.map(d => ({
+          ...d.data(),
+          id: d.id,
+          redeemedAt: d.data().redeemedAt?.toDate?.()?.toLocaleDateString() || "Recently",
+        }))))
+        .catch(() => {});
+    }
+  }, [user]);
+
+  const displayCoupons = (user && !isDemoMode) ? firestoreCoupons : redeemedCoupons;
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 2500);
   };
 
-  const handleRedeem = (reward) => {
+  const handleRedeem = async (reward) => {
     const ok = redeemPoints(reward.cost, reward);
     if (ok) {
       setModal(null);
+      const code = `GP-${reward.brand.toUpperCase().slice(0, 4)}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
       showToast(`🎉 Redeemed: ${reward.title}`);
+      if (user && !isDemoMode) {
+        try {
+          const docRef = await addDoc(collection(db, "profiles", user.uid, "coupons"), {
+            title: reward.title,
+            brand: reward.brand,
+            cost: reward.cost,
+            code,
+            redeemedAt: serverTimestamp(),
+          });
+          setFirestoreCoupons(prev => [{
+            id: docRef.id,
+            title: reward.title,
+            brand: reward.brand,
+            cost: reward.cost,
+            code,
+            redeemedAt: new Date().toLocaleDateString(),
+          }, ...prev]);
+        } catch (e) {
+          console.error("Failed to save coupon:", e);
+        }
+      }
     } else {
       showToast("Insufficient GreenPoints", "error");
       setModal(null);
@@ -42,17 +84,17 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
       {view === "coupons" ? (
         <div style={{ padding: "0 20px" }}>
           <div style={{ fontSize: 13, color: "var(--text2)", marginBottom: 16 }}>
-            {redeemedCoupons.length} active coupon{redeemedCoupons.length !== 1 ? "s" : ""}
+            {displayCoupons.length} active coupon{displayCoupons.length !== 1 ? "s" : ""}
           </div>
-          {redeemedCoupons.length === 0 ? (
+          {displayCoupons.length === 0 ? (
             <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text3)" }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>🎫</div>
               <div>No coupons yet. Redeem rewards to get started.</div>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {redeemedCoupons.map((c, i) => (
-                <div key={i} className="card">
+              {displayCoupons.map((c, i) => (
+                <div key={c.id || i} className="card">
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 15 }}>{c.title}</div>
@@ -60,11 +102,7 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
                     </div>
                     <span className="tag tag-green">Active</span>
                   </div>
-                  <div style={{
-                    background: "var(--bg)", border: "1px dashed var(--border)", borderRadius: 10,
-                    padding: "10px 14px", fontFamily: "monospace", fontSize: 14, color: "var(--green-light)",
-                    letterSpacing: "1px", textAlign: "center"
-                  }}>
+                  <div style={{ background: "var(--bg)", border: "1px dashed var(--border)", borderRadius: 10, padding: "10px 14px", fontFamily: "monospace", fontSize: 14, color: "var(--green-light)", letterSpacing: "1px", textAlign: "center" }}>
                     {c.code}
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 8, textAlign: "center" }}>
@@ -77,7 +115,6 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
         </div>
       ) : (
         <div style={{ padding: "0 20px" }}>
-          {/* Balance strip */}
           <div style={{ background: "rgba(22,163,74,0.08)", border: "1px solid rgba(22,163,74,0.2)", borderRadius: 12, padding: "12px 16px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: 14, color: "var(--text2)" }}>Your balance</span>
             <span style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 800, fontSize: 18, color: "var(--green-light)" }}>
@@ -85,7 +122,6 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
             </span>
           </div>
 
-          {/* Category tabs */}
           <div className="cat-tabs" style={{ marginBottom: 16 }}>
             {cats.map(c => (
               <button key={c} className={`cat-tab ${cat === c ? "active" : ""}`} onClick={() => setCat(c)}>
@@ -94,7 +130,6 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
             ))}
           </div>
 
-          {/* Rewards grid */}
           <div className="rewards-grid">
             {filtered.map(r => (
               <div key={r.id} className="reward-card">
@@ -124,7 +159,6 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
         </div>
       )}
 
-      {/* Confirm modal */}
       {modal && (
         <div className="modal-overlay" onClick={() => setModal(null)}>
           <div className="modal-sheet" onClick={e => e.stopPropagation()}>
@@ -157,7 +191,6 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
         </div>
       )}
 
-      {/* Toast */}
       {toast && <div className={`toast ${toast.type}`}>{toast.msg}</div>}
     </div>
   );

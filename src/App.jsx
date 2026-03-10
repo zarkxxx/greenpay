@@ -109,8 +109,8 @@ function AppInner() {
       case "map": return <MapPage setActiveTab={setActiveTab} />;
       case "profile": return <Profile points={points} bottles={bottles} setActiveTab={setActiveTab} redeemedCoupons={redeemedCoupons} notifications={notifications} onLogout={handleLogout} user={currentUser} isDemoMode={isDemoMode} />;
       case "wallet": return <Wallet points={points} setActiveTab={setActiveTab} userId={user?.uid} />;
-      case "gamification": return <Gamification bottles={bottles} setActiveTab={setActiveTab} />;
-      case "campaigns": return <Campaigns setActiveTab={setActiveTab} />;
+      case "gamification": return <Gamification bottles={bottles} points={points} setActiveTab={setActiveTab} />;
+case "campaigns": return <Campaigns setActiveTab={setActiveTab} bottles={bottles} />;
       default: return <Home points={points} bottles={bottles} setActiveTab={setActiveTab} user={currentUser} />;
     }
   };

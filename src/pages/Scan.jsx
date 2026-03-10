@@ -6,16 +6,18 @@ const VALID_MACHINES = ["GP-AHM-001", "GP-AHM-002", "GP-AHM-003", "GP-AHM-004", 
 
 export default function Scan({ addPoints }) {
   const { user } = useAuth();
+  const isDemoMode = localStorage.getItem("gp_demo_mode") === "true";
   const [state, setState] = useState("options");
   const [code, setCode] = useState("");
   const [machineId, setMachineId] = useState("GP-AHM-001");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
+  
   const awardPoints = async (machine) => {
     setSaving(true);
     try {
-      if (user) {
+      if (user && !isDemoMode) {
         await addPointsDB(user.uid, 5, `Bottle recycled at ${machine}`);
       }
       addPoints(5); // update local state
