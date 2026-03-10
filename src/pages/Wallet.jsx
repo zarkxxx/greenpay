@@ -1,21 +1,37 @@
 import { useState, useEffect } from "react";
 import { getTransactions } from "../lib/db";
 
-export default function Wallet({ points, setActiveTab, userId }) {
+const DEMO_TRANSACTIONS = [
+  { id: "d1", type: "earn", description: "Bottle recycled at GP-AHM-001", points: 5, createdAt: null, _label: "Today, 3:45 PM" },
+  { id: "d2", type: "earn", description: "Bottle recycled at GP-AHM-003", points: 5, createdAt: null, _label: "Today, 11:20 AM" },
+  { id: "d3", type: "bonus", description: "Referral Bonus", points: 100, createdAt: null, _label: "Yesterday" },
+  { id: "d4", type: "redeem", description: "Redeemed: ₹50 Off on Orders", points: -500, createdAt: null, _label: "10 Mar 2026" },
+  { id: "d5", type: "bonus", description: "Welcome Bonus", points: 100, createdAt: null, _label: "10 Mar 2026" },
+  { id: "d6", type: "earn", description: "Bottle recycled at GP-AHM-002", points: 5, createdAt: null, _label: "9 Mar 2026" },
+  { id: "d7", type: "earn", description: "Bottle recycled at GP-AHM-004", points: 5, createdAt: null, _label: "9 Mar 2026" },
+  { id: "d8", type: "redeem", description: "Redeemed: Free Premium Paan", points: -300, createdAt: null, _label: "9 Mar 2026" },
+  { id: "d9", type: "earn", description: "Bottle recycled at GP-AHM-001", points: 5, createdAt: null, _label: "8 Mar 2026" },
+  { id: "d10", type: "redeem", description: "Redeemed: ₹10 Cashback", points: -100, createdAt: null, _label: "8 Mar 2026" },
+];
+
+export default function Wallet({ points, setActiveTab, userId, isDemoMode }) {
   const [filter, setFilter] = useState("all");
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (userId) {
+    if (isDemoMode) {
+      setTransactions(DEMO_TRANSACTIONS);
+      setLoading(false);
+    } else if (userId) {
       getTransactions(userId)
         .then(setTransactions)
         .catch(() => setTransactions([]))
         .finally(() => setLoading(false));
     } else {
-      setLoading(false); // demo mode or not logged in
+      setLoading(false);
     }
-  }, [userId]);
+  }, [userId, isDemoMode]);
 
   const equiv = Math.floor(points / 10);
 
@@ -28,6 +44,16 @@ export default function Wallet({ points, setActiveTab, userId }) {
   const icons = { earn: "♻️", bonus: "🎁", redeem: "🛍️" };
   const bgColors = { earn: "rgba(22,163,74,0.15)", bonus: "rgba(245,158,11,0.15)", redeem: "rgba(239,68,68,0.15)" };
 
+  const formatDate = (tx) => {
+    if (tx._label) return tx._label;
+    if (tx.createdAt?.toDate) {
+      return tx.createdAt.toDate().toLocaleDateString("en-IN", {
+        day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
+      });
+    }
+    return "Just now";
+  };
+
   return (
     <div className="page">
       <div className="page-header">
@@ -37,11 +63,31 @@ export default function Wallet({ points, setActiveTab, userId }) {
 
       <div style={{ padding: "0 20px" }}>
         <div className="wallet-card" style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 8 }}>Available Balance</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 8 }}>
+            Available Balance
+          </div>
           <div className="wallet-pts">{points.toLocaleString()}<span>GP</span></div>
           <div className="wallet-equiv">≈ <strong>₹{equiv}</strong> redeemable value</div>
           <div style={{ display: "flex", gap: 10, marginTop: 16, position: "relative", zIndex: 1 }}>
-            <button className="btn-primary btn-sm" style={{ flex: 1 }} onClick={() => setActiveTab("rewards")}>Redeem Points</button>
+            <button className="btn-primary btn-sm" style={{ flex: 1 }} onClick={() => setActiveTab("rewards")}>
+              Redeem Points
+            </button>
+          </div>
+        </div>
+
+        {/* Summary strip */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+          <div className="card" style={{ textAlign: "center", padding: "12px 10px" }}>
+            <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 18, color: "var(--green-light)" }}>
+              +{transactions.filter(t => t.points > 0).reduce((s, t) => s + t.points, 0)}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>Total Earned</div>
+          </div>
+          <div className="card" style={{ textAlign: "center", padding: "12px 10px" }}>
+            <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 18, color: "#EF4444" }}>
+              {transactions.filter(t => t.points < 0).reduce((s, t) => s + t.points, 0)}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>Total Redeemed</div>
           </div>
         </div>
 
@@ -71,9 +117,7 @@ export default function Wallet({ points, setActiveTab, userId }) {
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 14, fontWeight: 500 }}>{tx.description || "Transaction"}</div>
-                  <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 2 }}>
-                    {tx.createdAt?.toDate ? tx.createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : "Just now"}
-                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 2 }}>{formatDate(tx)}</div>
                 </div>
                 <div className={`tx-pts ${tx.points > 0 ? "positive" : "negative"}`}>
                   {tx.points > 0 ? "+" : ""}{tx.points} GP

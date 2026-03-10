@@ -5,6 +5,10 @@ export default function Home({ points, bottles, setActiveTab, user }) {
   const name = user?.name?.split(" ")[0] || "there";
   const initials = (user?.name || "U").charAt(0).toUpperCase();
 
+  const dailyProgress = Math.min(bottles, 10);
+  const dailyPct = Math.min((dailyProgress / 10) * 100, 100);
+  const dailyDone = dailyProgress >= 10;
+
   return (
     <div className="page">
       <div style={{ padding: "52px 20px 0", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -27,6 +31,7 @@ export default function Home({ points, bottles, setActiveTab, user }) {
       </div>
 
       <div style={{ padding: "20px 20px 0" }}>
+        {/* Wallet card */}
         <div className="wallet-card" style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.8px" }}>
             GreenPoints Balance
@@ -39,6 +44,7 @@ export default function Home({ points, bottles, setActiveTab, user }) {
           </div>
         </div>
 
+        {/* Quick Actions */}
         <div style={{ marginBottom: 20 }}>
           <div className="section-header">
             <div className="section-title">Quick Actions</div>
@@ -52,7 +58,7 @@ export default function Home({ points, bottles, setActiveTab, user }) {
               <div className="action-icon" style={{ background: "rgba(59,130,246,0.15)" }}>🗺️</div>
               <div className="action-label">Find Nearby</div>
             </button>
-            <button className="action-btn" onClick={() => setActiveTab("rewards")}>
+            <button className="action-btn" onClick={() => setActiveTab("coupons")}>
               <div className="action-icon" style={{ background: "rgba(245,158,11,0.15)" }}>🎁</div>
               <div className="action-label">My Rewards</div>
             </button>
@@ -63,6 +69,7 @@ export default function Home({ points, bottles, setActiveTab, user }) {
           </div>
         </div>
 
+        {/* Impact */}
         <div style={{ marginBottom: 20 }}>
           <div className="section-header">
             <div className="section-title">Your Impact</div>
@@ -76,21 +83,31 @@ export default function Home({ points, bottles, setActiveTab, user }) {
           </div>
         </div>
 
+        {/* Active Challenge */}
         <div style={{ marginBottom: 20 }}>
           <div className="section-header">
             <div className="section-title">Active Challenge</div>
             <button className="section-link" onClick={() => setActiveTab("campaigns")}>All →</button>
           </div>
-          <button className="campaign-card active" style={{ width: "100%", background: "none", cursor: "pointer", textAlign: "left", border: "1px solid rgba(22,163,74,0.3)", borderRadius: 16, padding: 20 }} onClick={() => setActiveTab("campaigns")}>
+          <button
+            style={{ width: "100%", background: dailyDone ? "rgba(22,163,74,0.08)" : "none", cursor: "pointer", textAlign: "left", border: `1px solid ${dailyDone ? "var(--green)" : "rgba(22,163,74,0.3)"}`, borderRadius: 16, padding: 20 }}
+            onClick={() => setActiveTab("campaigns")}
+          >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
               <div>
-                <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 15 }}>Daily Dash 🔥</div>
+                <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 15 }}>
+                  Daily Dash 🔥 {dailyDone && <span style={{ color: "var(--green-light)", fontSize: 13 }}>✓ Complete!</span>}
+                </div>
                 <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 2 }}>Recycle 10 bottles today</div>
               </div>
               <span className="tag tag-green">+50 pts</span>
             </div>
-            <div className="progress-bar"><div className="progress-fill" style={{ width: "40%" }} /></div>
-            <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 6 }}>4 / 10 bottles · Ends tonight</div>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{ width: `${dailyPct}%` }} />
+            </div>
+            <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 6 }}>
+              {dailyProgress} / 10 bottles · Ends tonight
+            </div>
           </button>
         </div>
       </div>
