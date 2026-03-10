@@ -6,15 +6,10 @@ export default function MapPage({ setActiveTab }) {
 
   const statusBg = { available: "tag-green", full: "tag-red", offline: "tag-gray" };
 
-  // Build Google Maps embed URL with all machine markers
-  const mapSrc = `https://www.google.com/maps/embed/v1/search?key=AIzaSyBnEhuV0yJlMMvSOKwPXp7U6MhCNeFlkc0&q=recycling+machines+Ahmedabad&center=23.0300,72.5200&zoom=13`;
-
-  // Static map with markers using Maps Static API
-  const markerParams = machines.map((m, i) => 
-    `markers=color:${m.status === "available" ? "green" : m.status === "full" ? "red" : "gray"}%7Clabel:${i+1}%7C${m.lat},${m.lng}`
-  ).join("&");
-
-  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=23.0300,72.5200&zoom=13&size=600x260&scale=2&maptype=roadmap&style=element:geometry%7Ccolor:0x1a1a1a&style=element:labels.text.fill%7Ccolor:0x757575&style=element:labels.text.stroke%7Ccolor:0x212121&style=feature:road%7Celement:geometry%7Ccolor:0x2c2c2c&style=feature:water%7Celement:geometry%7Ccolor:0x000000&${markerParams}&key=AIzaSyBnEhuV0yJlMMvSOKwPXp7U6MhCNeFlkc0`;
+  const openDirections = (e, m) => {
+    e.stopPropagation();
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`, "_blank");
+  };
 
   return (
     <div className="page">
@@ -23,48 +18,35 @@ export default function MapPage({ setActiveTab }) {
       </div>
 
       <div style={{ padding: "0 20px" }}>
-        {/* Static map with machine markers */}
+        {/* Map */}
         <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 16, border: "1px solid var(--border)", position: "relative" }}>
-          <img
-            src={staticMapUrl}
-            alt="Machine locations map"
-            style={{ width: "100%", height: 240, objectFit: "cover", display: "block" }}
-            onError={(e) => {
-              // Fallback to iframe if static map fails
-              e.target.style.display = "none";
-              e.target.nextSibling.style.display = "block";
-            }}
-          />
-          {/* Fallback iframe */}
           <iframe
             title="GreenPay Machines Map"
             width="100%"
             height="240"
-            style={{ border: "none", display: "none", filter: "invert(0.9) hue-rotate(180deg)" }}
+            style={{ border: "none", display: "block", filter: "invert(0.9) hue-rotate(180deg)" }}
             src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d14693!2d72.5200!3d23.0300!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sin!4v1710000000000!5m2!1sen!2sin"
           />
-          
-            href={`https://www.google.com/maps/search/recycling+machines/@23.0300,72.5200,14z`}
-            target="_blank"
-            rel="noreferrer"
+          <button
+            onClick={() => window.open("https://www.google.com/maps/search/recycling+machines/@23.0300,72.5200,14z", "_blank")}
             style={{
               position: "absolute", top: 10, left: 10,
               background: "rgba(0,0,0,0.7)", color: "white",
               fontSize: 12, padding: "6px 12px", borderRadius: 8,
-              textDecoration: "none", backdropFilter: "blur(4px)",
+              cursor: "pointer", backdropFilter: "blur(4px)",
               border: "1px solid rgba(255,255,255,0.1)"
             }}
           >
             Open in Maps ↗
-          </a>
-          {/* Machine number legend */}
+          </button>
+          {/* Legend */}
           <div style={{
             position: "absolute", bottom: 10, right: 10,
             background: "rgba(0,0,0,0.75)", borderRadius: 8, padding: "6px 10px",
             backdropFilter: "blur(4px)", border: "1px solid rgba(255,255,255,0.1)"
           }}>
             {machines.map((m, i) => (
-              <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "white", marginBottom: i < machines.length - 1 ? 3 : 0 }}>
+              <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, marginBottom: i < machines.length - 1 ? 3 : 0 }}>
                 <div style={{
                   width: 16, height: 16, borderRadius: "50%", fontSize: 9, fontWeight: 700,
                   display: "flex", alignItems: "center", justifyContent: "center",
@@ -83,15 +65,16 @@ export default function MapPage({ setActiveTab }) {
           {machines.filter(m => m.status === "available").length} machines available near you
         </div>
 
+        {/* Machine list */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {machines.map((m, i) => (
-            <button
+            <div
               key={m.id}
               className="card"
               style={{
-                width: "100%", textAlign: "left", cursor: "pointer",
+                cursor: "pointer",
                 border: selected?.id === m.id ? "1px solid var(--green)" : "1px solid var(--border)",
-                background: "var(--card)", opacity: m.status === "offline" ? 0.6 : 1
+                opacity: m.status === "offline" ? 0.6 : 1
               }}
               onClick={() => setSelected(selected?.id === m.id ? null : m)}
             >
@@ -112,7 +95,7 @@ export default function MapPage({ setActiveTab }) {
                     }}>{i + 1}</div>
                   </div>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 14, color: "var(--text)" }}>{m.name}</div>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>{m.name}</div>
                     <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 1 }}>{m.id} · {m.distance}</div>
                   </div>
                 </div>
@@ -121,7 +104,7 @@ export default function MapPage({ setActiveTab }) {
 
               {selected?.id === m.id && (
                 <div>
-                  <div style={{ marginBottom: 8 }}>
+                  <div style={{ marginBottom: 10 }}>
                     <div style={{ fontSize: 12, color: "var(--text2)", marginBottom: 4, display: "flex", justifyContent: "space-between" }}>
                       <span>Bin Capacity</span>
                       <span style={{ color: m.capacity > 80 ? "var(--red)" : "var(--green-light)" }}>{m.capacity}%</span>
@@ -147,20 +130,17 @@ export default function MapPage({ setActiveTab }) {
                         {m.status === "full" ? "Machine full — cannot accept bottles" : "Machine offline"}
                       </div>
                     )}
-                    
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`}
-                      target="_blank"
-                      rel="noreferrer"
+                    <button
                       className="btn-ghost btn-sm"
-                      style={{ flex: 1, textDecoration: "none", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center" }}
-                      onClick={e => e.stopPropagation()}
+                      style={{ flex: 1 }}
+                      onClick={(e) => openDirections(e, m)}
                     >
                       Directions
-                    </a>
+                    </button>
                   </div>
                 </div>
               )}
-            </button>
+            </div>
           ))}
         </div>
       </div>
