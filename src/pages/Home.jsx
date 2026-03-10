@@ -50,19 +50,19 @@ export default function Home({ points, bottles, setActiveTab, user }) {
             <div className="section-title">Quick Actions</div>
           </div>
           <div className="action-grid">
-            <button className="action-btn" onClick={() => setActiveTab("scan")}>
+            <button className="action-btn" onClick={() => setActiveTab("scan")} aria-label="Scan a machine to earn points">
               <div className="action-icon" style={{ background: "rgba(22,163,74,0.15)" }}>📷</div>
               <div className="action-label">Scan Machine</div>
             </button>
-            <button className="action-btn" onClick={() => setActiveTab("map")}>
+            <button className="action-btn" onClick={() => setActiveTab("map")} aria-label="Find nearby recycling machines">
               <div className="action-icon" style={{ background: "rgba(59,130,246,0.15)" }}>🗺️</div>
               <div className="action-label">Find Nearby</div>
             </button>
-            <button className="action-btn" onClick={() => setActiveTab("coupons")}>
+            <button className="action-btn" onClick={() => setActiveTab("coupons")} aria-label="View your redeemed coupons">
               <div className="action-icon" style={{ background: "rgba(245,158,11,0.15)" }}>🎁</div>
               <div className="action-label">My Rewards</div>
             </button>
-            <button className="action-btn" onClick={() => setActiveTab("gamification")}>
+            <button className="action-btn" onClick={() => setActiveTab("gamification")} aria-label="View leaderboard and badges">
               <div className="action-icon" style={{ background: "rgba(168,85,247,0.15)" }}>🏆</div>
               <div className="action-label">Leaderboard</div>
             </button>
