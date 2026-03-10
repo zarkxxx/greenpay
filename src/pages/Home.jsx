@@ -90,7 +90,7 @@ export default function Home({ points, bottles, setActiveTab, user }) {
             <button className="section-link" onClick={() => setActiveTab("campaigns")}>All →</button>
           </div>
           <button
-            style={{ width: "100%", background: dailyDone ? "rgba(22,163,74,0.08)" : "none", cursor: "pointer", textAlign: "left", border: `1px solid ${dailyDone ? "var(--green)" : "rgba(22,163,74,0.3)"}`, borderRadius: 16, padding: 20 }}
+            style={{ width: "100%", background: dailyDone ? "rgba(22,163,74,0.08)" : "none", cursor: "pointer", textAlign: "left", border: `1px solid ${dailyDone ? "var(--green)" : "rgba(22,163,74,0.3)"}`, borderRadius: 16, padding: 20, color: "var(--text)" }}
             onClick={() => setActiveTab("campaigns")}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
