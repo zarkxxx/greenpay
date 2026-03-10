@@ -1,20 +1,16 @@
-import { useState, useEffect, lazy, Suspense } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./lib/AuthContext";
 import Onboarding from "./pages/Onboarding";
 import Login from "./pages/Login";
+import Home from "./pages/Home";
+import Scan from "./pages/Scan";
+import Rewards from "./pages/Rewards";
+import MapPage from "./pages/MapPage";
+import Profile from "./pages/Profile";
+import Wallet from "./pages/Wallet";
+import Gamification from "./pages/Gamification";
+import Campaigns from "./pages/Campaigns";
 import "./index.css";
-import { redeemPoints as redeemDB } from "./lib/db";
-
-// Lazy load pages for code splitting
-const Home = lazy(() => import("./pages/Home"));
-const Scan = lazy(() => import("./pages/Scan"));
-const Rewards = lazy(() => import("./pages/Rewards"));
-const MapPage = lazy(() => import("./pages/MapPage"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Wallet = lazy(() => import("./pages/Wallet"));
-const Gamification = lazy(() => import("./pages/Gamification"));
-const Campaigns = lazy(() => import("./pages/Campaigns"));
 
 export default function App() {
   return (
@@ -78,6 +74,7 @@ function AppInner() {
       // Write redemption transaction to Firestore
       if (user && !isDemoMode) {
         try {
+          const { redeemPoints: redeemDB } = await import("./lib/db");
           await redeemDB(user.uid, cost, `Redeemed: ${reward.title}`);
         } catch (e) {
           console.error("Failed to write redemption to Firestore:", e);
@@ -124,43 +121,29 @@ function AppInner() {
   ];
 
   const renderTab = () => {
-    const pageVariants = {
-      initial: { opacity: 0, x: 20 },
-      in: { opacity: 1, x: 0 },
-      out: { opacity: 0, x: -20 }
-    };
-    const pageTransition = { type: 'tween', ease: 'anticipate', duration: 0.3 };
-
     switch (activeTab) {
-      case "home": return <motion.div key="home" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><Home points={points} bottles={bottles} setActiveTab={setActiveTab} user={currentUser} /></motion.div>;
-      case "scan": return <motion.div key="scan" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><Scan addPoints={addPoints} /></motion.div>;
-      case "rewards": return <motion.div key="rewards" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><Rewards points={points} redeemPoints={redeemPoints} redeemedCoupons={redeemedCoupons} /></motion.div>;
-      case "coupons": return <motion.div key="coupons" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><Rewards points={points} redeemPoints={redeemPoints} redeemedCoupons={redeemedCoupons} defaultView="coupons" /></motion.div>;
-      case "map": return <motion.div key="map" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><MapPage setActiveTab={setActiveTab} /></motion.div>;
-      case "profile": return <motion.div key="profile" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><Profile points={points} bottles={bottles} setActiveTab={setActiveTab} redeemedCoupons={redeemedCoupons} onLogout={handleLogout} user={currentUser} isDemoMode={isDemoMode} /></motion.div>;
-      case "wallet": return <motion.div key="wallet" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><Wallet points={points} setActiveTab={setActiveTab} userId={user?.uid} isDemoMode={isDemoMode} /></motion.div>;
-      case "gamification": return <motion.div key="gamification" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><Gamification bottles={bottles} points={points} setActiveTab={setActiveTab} /></motion.div>;
-      case "campaigns": return <motion.div key="campaigns" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><Campaigns setActiveTab={setActiveTab} bottles={bottles} /></motion.div>;
-      default: return <motion.div key="home" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><Home points={points} bottles={bottles} setActiveTab={setActiveTab} user={currentUser} /></motion.div>;
+      case "home": return <Home points={points} bottles={bottles} setActiveTab={setActiveTab} user={currentUser} />;
+      case "scan": return <Scan addPoints={addPoints} />;
+      case "rewards": return <Rewards points={points} redeemPoints={redeemPoints} redeemedCoupons={redeemedCoupons} />;
+      case "coupons": return <Rewards points={points} redeemPoints={redeemPoints} redeemedCoupons={redeemedCoupons} defaultView="coupons" />;
+      case "map": return <MapPage setActiveTab={setActiveTab} />;
+      case "profile": return <Profile points={points} bottles={bottles} setActiveTab={setActiveTab} redeemedCoupons={redeemedCoupons} onLogout={handleLogout} user={currentUser} isDemoMode={isDemoMode} />;
+      case "wallet": return <Wallet points={points} setActiveTab={setActiveTab} userId={user?.uid} isDemoMode={isDemoMode} />;
+      case "gamification": return <Gamification bottles={bottles} points={points} setActiveTab={setActiveTab} />;
+      case "campaigns": return <Campaigns setActiveTab={setActiveTab} bottles={bottles} />;
+      default: return <Home points={points} bottles={bottles} setActiveTab={setActiveTab} user={currentUser} />;
     }
   };
 
   return (
     <div className="app-shell">
-      <div className="app-content">
-        <AnimatePresence mode="wait">
-          <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'var(--text2)' }}>Loading...</div>}>
-            {renderTab()}
-          </Suspense>
-        </AnimatePresence>
-      </div>
+      <div className="app-content">{renderTab()}</div>
       <nav className="bottom-nav">
         {tabs.map(tab => (
           <button
             key={tab.id}
             className={`nav-item ${activeTab === tab.id ? "active" : ""}`}
             onClick={() => setActiveTab(tab.id)}
-            aria-label={`Navigate to ${tab.label}`}
           >
             <tab.icon />
             <span>{tab.label}</span>

@@ -3,7 +3,6 @@ import { rewards } from "../data/mockData";
 import { useAuth } from "../lib/AuthContext";
 import { db } from "../lib/firebase";
 import { collection, addDoc, getDocs, serverTimestamp, query, orderBy } from "firebase/firestore";
-import Skeleton from "../components/Skeleton";
 
 export default function Rewards({ points, redeemPoints, redeemedCoupons, defaultView }) {
   const [cat, setCat] = useState("all");
@@ -126,18 +125,7 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons, default
           </div>
 
           {loadingCoupons ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="card" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <Skeleton width="36px" height="36px" style={{ borderRadius: "8px" }} />
-                  <div style={{ flex: 1 }}>
-                    <Skeleton width="60%" height="14px" style={{ marginBottom: 4 }} />
-                    <Skeleton width="40%" height="12px" />
-                  </div>
-                  <Skeleton width="50px" height="20px" />
-                </div>
-              ))}
-            </div>
+            <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>Loading...</div>
           ) : displayCoupons.length === 0 ? (
             <div style={{
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",

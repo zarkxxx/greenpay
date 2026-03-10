@@ -1,17 +1,8 @@
-import { useState, useEffect } from "react";
-import { getToken, onMessage } from "firebase/messaging";
-import { messaging } from "../lib/firebase";
+import { useState } from "react";
 
 export default function Profile({ points, bottles, setActiveTab, redeemedCoupons, onLogout, user, isDemoMode }) {
   const [showReferral, setShowReferral] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-
-  useEffect(() => {
-    if ('Notification' in window) {
-      setNotificationsEnabled(Notification.permission === 'granted');
-    }
-  }, []);
 
   const plastic = (bottles * 0.089).toFixed(1);
   const co2 = (bottles * 0.172).toFixed(1);
@@ -21,31 +12,14 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
   const email = user?.email || "";
   const avatar = user?.avatar || null;
   const initials = name.charAt(0).toUpperCase();
-  const referralCode = `GP-${name.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, "")}${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
+  const referralCode = useMemo(() => 
+  `GP-${name.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, "")}${Math.random().toString(36).substr(2, 3).toUpperCase()}`,
+  [name]);
 
   const copyCode = () => {
     navigator.clipboard.writeText(referralCode).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const shareImpact = async () => {
-    const shareData = {
-      title: 'My GreenPay Impact',
-      text: `I've recycled ${bottles} bottles, saved ${plastic}kg plastic, and reduced ${co2}kg CO2! Join me on GreenPay 🌱`,
-      url: 'https://greenpay.app'
-    };
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        console.log('Share cancelled');
-      }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
-      alert('Impact copied to clipboard!');
-    }
   };
 
   const level = bottles >= 1000 ? "Legend" : bottles >= 500 ? "Gold" : bottles >= 100 ? "Silver" : "Bronze";
@@ -106,9 +80,6 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
               </div>
             ))}
           </div>
-          <button className="btn-ghost" style={{ width: "100%", marginTop: 12, fontSize: 13 }} onClick={shareImpact}>
-            Share My Impact 🌱
-          </button>
         </div>
 
         {/* Menu */}
@@ -119,7 +90,6 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
             { icon: "🏆", label: "Leaderboard & Badges", action: () => setActiveTab("gamification") },
             { icon: "🔥", label: "Challenges", action: () => setActiveTab("campaigns") },
             { icon: "👥", label: "Refer a Friend", action: () => setShowReferral(true) },
-            { icon: "🔔", label: "Push Notifications", toggle: true, action: toggleNotifications },
           ].map((item, i) => (
             <div key={i} className="menu-item" onClick={item.action}>
               <span className="menu-icon">{item.icon}</span>
@@ -129,11 +99,7 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
                   {item.badge}
                 </span>
               )}
-              {item.toggle ? (
-                <input type="checkbox" checked={notificationsEnabled} onChange={toggleNotifications} style={{ marginRight: 4 }} />
-              ) : (
-                <span className="menu-arrow">›</span>
-              )}
+              <span className="menu-arrow">›</span>
             </div>
           ))}
         </div>
