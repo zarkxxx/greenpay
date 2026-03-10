@@ -8,30 +8,35 @@ export default function Login() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: "https://greenpay-theta.vercel.app",
         skipBrowserRedirect: true,
       },
     });
-  
-    if (error) {
-      console.error(error);
-      return;
-    }
 
-    if (data?.url) {
-      const popup = window.open(data.url, "google-login", "width=500,height=600,scrollbars=yes");
-    
-      // Poll for popup close and check session
-      const timer = setInterval(async () => {
+    if (error || !data?.url) return;
+
+    const width = 500;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+
+    const popup = window.open(
+      data.url,
+      "google-login",
+      `width=${width},height=${height},left=${left},top=${top},scrollbars=yes`
+    );
+
+    const timer = setInterval(async () => {
+      try {
         if (popup?.closed) {
           clearInterval(timer);
           const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            window.location.reload();
-          }
+          if (session) window.location.reload();
         }
-      }, 500);
-    }
+      } catch (e) {
+        clearInterval(timer);
+      }
+    }, 500);
   };
 
   useEffect(() => {
