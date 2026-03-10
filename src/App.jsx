@@ -31,7 +31,6 @@ function AppInner() {
   const [activeTab, setActiveTab] = useState("home");
   const [points, setPoints] = useState(0);
   const [bottles, setBottles] = useState(0);
-  const [notifications, setNotifications] = useState(3);
   const [redeemedCoupons, setRedeemedCoupons] = useState([]);
 
   useEffect(() => {
@@ -40,7 +39,7 @@ function AppInner() {
       else if (localStorage.getItem("gp_onboarded")) setScreen("login");
     }
   }, [user, loading, isDemoMode]);
-  
+
   useEffect(() => {
     if (profile) {
       setPoints(profile.points ?? 0);
@@ -107,10 +106,10 @@ function AppInner() {
       case "scan": return <Scan addPoints={addPoints} />;
       case "rewards": return <Rewards points={points} redeemPoints={redeemPoints} redeemedCoupons={redeemedCoupons} />;
       case "map": return <MapPage setActiveTab={setActiveTab} />;
-      case "profile": return <Profile points={points} bottles={bottles} setActiveTab={setActiveTab} redeemedCoupons={redeemedCoupons} notifications={notifications} onLogout={handleLogout} user={currentUser} isDemoMode={isDemoMode} />;
+      case "profile": return <Profile points={points} bottles={bottles} setActiveTab={setActiveTab} redeemedCoupons={redeemedCoupons} onLogout={handleLogout} user={currentUser} isDemoMode={isDemoMode} />;
       case "wallet": return <Wallet points={points} setActiveTab={setActiveTab} userId={user?.uid} />;
       case "gamification": return <Gamification bottles={bottles} points={points} setActiveTab={setActiveTab} />;
-case "campaigns": return <Campaigns setActiveTab={setActiveTab} bottles={bottles} />;
+      case "campaigns": return <Campaigns setActiveTab={setActiveTab} bottles={bottles} />;
       default: return <Home points={points} bottles={bottles} setActiveTab={setActiveTab} user={currentUser} />;
     }
   };
@@ -127,9 +126,6 @@ case "campaigns": return <Campaigns setActiveTab={setActiveTab} bottles={bottles
           >
             <tab.icon />
             <span>{tab.label}</span>
-            {tab.id === "profile" && notifications > 0 && (
-              <span className="notif-badge">{notifications}</span>
-            )}
           </button>
         ))}
       </nav>
