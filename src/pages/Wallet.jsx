@@ -12,6 +12,8 @@ export default function Wallet({ points, setActiveTab, userId }) {
         .then(setTransactions)
         .catch(() => setTransactions([]))
         .finally(() => setLoading(false));
+    } else {
+      setLoading(false); // demo mode or not logged in
     }
   }, [userId]);
 
