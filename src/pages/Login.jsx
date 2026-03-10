@@ -9,11 +9,28 @@ export default function Login() {
       provider: "google",
       options: {
         redirectTo: window.location.origin,
-        skipBrowserRedirect: false,
+        skipBrowserRedirect: true,
       },
     });
+  
+    if (error) {
+      console.error(error);
+      return;
+    }
+
     if (data?.url) {
-      window.location.href = data.url;
+      const popup = window.open(data.url, "google-login", "width=500,height=600,scrollbars=yes");
+    
+      // Poll for popup close and check session
+      const timer = setInterval(async () => {
+        if (popup?.closed) {
+          clearInterval(timer);
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            window.location.reload();
+          }
+        }
+      }, 500);
     }
   };
 
