@@ -42,42 +42,44 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons, default
 
   const handleRedeem = async (reward) => {
     const ok = await redeemPoints(reward.cost, reward);
-    if (ok) {
-      setModal(null);
-
-      // Donate category — no coupon, just toast
-      if (reward.category === "donate") {
-        showToast(`💚 Donated ${reward.cost} GP to NGO. Thank you!`);
-        return;
-      }
-
-      const code = `GP-${reward.brand.toUpperCase().slice(0, 4)}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-      showToast(`🎉 Redeemed: ${reward.title}`);
-
-      if (user && !isDemoMode) {
-        try {
-          const docRef = await addDoc(collection(db, "profiles", user.uid, "coupons"), {
-            title: reward.title,
-            brand: reward.brand,
-            cost: reward.cost,
-            code,
-            redeemedAt: serverTimestamp(),
-          });
-          setFirestoreCoupons(prev => [{
-            id: docRef.id,
-            title: reward.title,
-            brand: reward.brand,
-            cost: reward.cost,
-            code,
-            redeemedAt: new Date().toLocaleDateString(),
-          }, ...prev]);
-        } catch (e) {
-          console.error("Failed to save coupon:", e);
-        }
-      }
-    } else {
+    if (!ok) {
       showToast("Insufficient GreenPoints", "error");
       setModal(null);
+      return;
+    }
+
+    setModal(null);
+
+    // Donate — no coupon, just toast. Transaction already written in App.jsx redeemPoints.
+    if (reward.category === "donate") {
+      showToast(`💚 Donated ${reward.cost} GP to NGO. Thank you!`);
+      return;
+    }
+
+    // All other categories — generate coupon
+    const code = `GP-${reward.brand.toUpperCase().slice(0, 4)}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+    showToast(`🎉 Redeemed: ${reward.title}`);
+
+    if (user && !isDemoMode) {
+      try {
+        const docRef = await addDoc(collection(db, "profiles", user.uid, "coupons"), {
+          title: reward.title,
+          brand: reward.brand,
+          cost: reward.cost,
+          code,
+          redeemedAt: serverTimestamp(),
+        });
+        setFirestoreCoupons(prev => [{
+          id: docRef.id,
+          title: reward.title,
+          brand: reward.brand,
+          cost: reward.cost,
+          code,
+          redeemedAt: new Date().toLocaleDateString(),
+        }, ...prev]);
+      } catch (e) {
+        console.error("Failed to save coupon:", e);
+      }
     }
   };
 
