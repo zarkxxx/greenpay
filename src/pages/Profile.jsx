@@ -1,18 +1,18 @@
 import { useState } from "react";
 
-export default function Profile({ points, bottles, setActiveTab, redeemedCoupons, notifications, onLogout, profile, user }) {
+export default function Profile({ points, bottles, setActiveTab, redeemedCoupons, onLogout, user, isDemoMode }) {
   const [showReferral, setShowReferral] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const plastic = (bottles * 0.089).toFixed(1);
   const co2 = (bottles * 0.172).toFixed(1);
+  const trees = (bottles * 0.008).toFixed(2);
 
-  const name = user?.name || user?.email?.split('@')[0] || "User";
+  const name = user?.name || user?.email?.split("@")[0] || "User";
   const email = user?.email || "";
   const avatar = user?.avatar || null;
   const initials = name.charAt(0).toUpperCase();
-  const referralCode = `GP-${(user?.email || "").slice(0, 6).toUpperCase().replace(/[^A-Z0-9]/g, "")}`;
-
+  const referralCode = `GP-${name.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, "")}${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
 
   const copyCode = () => {
     navigator.clipboard.writeText(referralCode).catch(() => {});
@@ -20,13 +20,20 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const level = bottles >= 1000 ? "Legend" : bottles >= 500 ? "Gold" : bottles >= 100 ? "Silver" : "Bronze";
+  const levelColor = { Legend: "#F59E0B", Gold: "#EAB308", Silver: "#9CA3AF", Bronze: "#CD7F32" }[level];
+
+  // Only non-donate coupons count as redeemable coupons
+  const couponCount = redeemedCoupons.filter(c => c.category !== "donate").length;
+
   return (
     <div className="page">
       <div style={{ padding: "52px 20px 0" }}>
+
         {/* Profile header */}
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
           {avatar ? (
-            <img src={avatar} alt={name} style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover" }} />
+            <img src={avatar} alt={name} style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--green)" }} />
           ) : (
             <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg, var(--green), var(--green-dim))", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 26, color: "white" }}>
               {initials}
@@ -35,7 +42,10 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
           <div>
             <div style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 20, fontWeight: 700 }}>{name}</div>
             <div style={{ fontSize: 13, color: "var(--text2)" }}>{email}</div>
-            <div style={{ fontSize: 12, color: "var(--text3)" }}>ID: {referralCode}</div>
+            <div style={{ fontSize: 12, marginTop: 2 }}>
+              <span style={{ color: levelColor, fontWeight: 600 }}>● {level}</span>
+              <span style={{ color: "var(--text3)", marginLeft: 8 }}>{isDemoMode ? "Demo Account" : "Verified"}</span>
+            </div>
           </div>
         </div>
 
@@ -44,7 +54,7 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
           {[
             { label: "Bottles", val: bottles },
             { label: "Points", val: points.toLocaleString() },
-            { label: "Level", val: "Bronze" },
+            { label: "Level", val: level },
           ].map(s => (
             <div key={s.label} className="card" style={{ textAlign: "center", padding: "14px 10px" }}>
               <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 18, color: "var(--green-light)" }}>{s.val}</div>
@@ -56,14 +66,15 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
         {/* Impact */}
         <div style={{ background: "rgba(22,163,74,0.06)", border: "1px solid rgba(22,163,74,0.15)", borderRadius: 14, padding: 16, marginBottom: 24 }}>
           <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 14, marginBottom: 12 }}>🌍 Your Total Impact</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
             {[
-              { val: `${plastic} kg`, label: "Plastic Diverted" },
-              { val: `${co2} kg`, label: "CO₂ Saved" },
+              { val: `${plastic}kg`, label: "Plastic Saved" },
+              { val: `${co2}kg`, label: "CO₂ Reduced" },
+              { val: `${trees}`, label: "Trees Equiv." },
             ].map(s => (
               <div key={s.label}>
-                <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 20, color: "var(--green-light)" }}>{s.val}</div>
-                <div style={{ fontSize: 12, color: "var(--text3)" }}>{s.label}</div>
+                <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: 17, color: "var(--green-light)" }}>{s.val}</div>
+                <div style={{ fontSize: 11, color: "var(--text3)" }}>{s.label}</div>
               </div>
             ))}
           </div>
@@ -72,7 +83,7 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
         {/* Menu */}
         <div className="card" style={{ padding: "4px 16px", marginBottom: 16 }}>
           {[
-            { icon: "🎫", label: "My Coupons", badge: redeemedCoupons.length || null, action: () => setActiveTab("rewards") },
+            { icon: "🎫", label: "My Coupons", badge: couponCount || null, action: () => setActiveTab("coupons") },
             { icon: "💰", label: "Wallet & History", action: () => setActiveTab("wallet") },
             { icon: "🏆", label: "Leaderboard & Badges", action: () => setActiveTab("gamification") },
             { icon: "🔥", label: "Challenges", action: () => setActiveTab("campaigns") },
@@ -82,7 +93,7 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
               <span className="menu-icon">{item.icon}</span>
               <span className="menu-label">{item.label}</span>
               {item.badge > 0 && (
-                <span style={{ background: "var(--green)", color: "white", fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 99 }}>
+                <span style={{ background: "var(--green)", color: "white", fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 99, marginRight: 4 }}>
                   {item.badge}
                 </span>
               )}
@@ -91,7 +102,11 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
           ))}
         </div>
 
-        <button className="btn-ghost" style={{ width: "100%", color: "var(--red)", borderColor: "rgba(239,68,68,0.3)", marginBottom: 40 }} onClick={onLogout}>
+        <button
+          className="btn-ghost"
+          style={{ width: "100%", color: "var(--red)", borderColor: "rgba(239,68,68,0.3)", marginBottom: 40 }}
+          onClick={onLogout}
+        >
           Log Out
         </button>
       </div>

@@ -2,52 +2,70 @@ import { useState } from "react";
 import { useAuth } from "../lib/AuthContext";
 import { addPoints as addPointsDB } from "../lib/db";
 
-const VALID_MACHINES = ["GP-AHM-001", "GP-AHM-002", "GP-AHM-003", "GP-AHM-004", "GP-AHM-005"];
+const MACHINES = {
+  "GP-AHM-001": { name: "Frizbee Food Park", status: "available" },
+  "GP-AHM-002": { name: "Bodakdev Circle", status: "available" },
+  "GP-AHM-003": { name: "SG Highway Mall", status: "full" },
+  "GP-AHM-004": { name: "Vastrapur Lake", status: "available" },
+  "GP-AHM-005": { name: "Iscon Temple Rd", status: "offline" },
+};
 
 export default function Scan({ addPoints }) {
   const { user } = useAuth();
   const isDemoMode = localStorage.getItem("gp_demo_mode") === "true";
   const [state, setState] = useState("options");
   const [code, setCode] = useState("");
-  const [machineId, setMachineId] = useState("GP-AHM-001");
+  const [machineId, setMachineId] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
-  
   const awardPoints = async (machine) => {
     setSaving(true);
     try {
       if (user && !isDemoMode) {
         await addPointsDB(user.uid, 5, `Bottle recycled at ${machine}`);
       }
-      addPoints(5); // update local state
+      addPoints(5);
       setMachineId(machine);
       setState("success");
     } catch (e) {
       console.error(e);
-      setState("success"); // still show success, local state updated
+      setState("success");
     } finally {
       setSaving(false);
     }
   };
 
-  const handleScan = () => {
-    setState("scanning");
-    setTimeout(() => {
-      awardPoints("GP-AHM-001");
-    }, 1500);
-  };
-
-  const handleCode = () => {
-    const trimmed = code.trim().toUpperCase();
+  const validateAndAward = (input) => {
+    const trimmed = input.trim().toUpperCase();
     if (!trimmed) return;
-    if (!VALID_MACHINES.includes(trimmed)) {
+
+    const machine = MACHINES[trimmed];
+    if (!machine) {
       setError("Invalid machine code. Check the ID on the machine.");
+      return;
+    }
+    if (machine.status === "full") {
+      setError(`${machine.name} is full. Please use a nearby machine.`);
+      return;
+    }
+    if (machine.status === "offline") {
+      setError(`${machine.name} is currently offline. Please try another.`);
       return;
     }
     setError("");
     awardPoints(trimmed);
   };
+
+  const handleScan = () => {
+    setState("scanning");
+    // Simulate QR scan — always resolves to GP-AHM-001 (available)
+    setTimeout(() => {
+      validateAndAward("GP-AHM-001");
+    }, 1500);
+  };
+
+  const handleCode = () => validateAndAward(code);
 
   if (state === "scanning") {
     return (
@@ -68,6 +86,9 @@ export default function Scan({ addPoints }) {
         <div style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 18, fontWeight: 700, color: "var(--text2)" }}>
           {saving ? "Saving points..." : "Scanning QR Code..."}
         </div>
+        <button className="btn-ghost" onClick={() => { setState("options"); setSaving(false); }}>
+          Cancel
+        </button>
       </div>
     );
   }
@@ -76,12 +97,15 @@ export default function Scan({ addPoints }) {
     return (
       <div className="success-screen">
         <div className="success-circle">✅</div>
-        <div>
+        <div style={{ textAlign: "center" }}>
           <div className="success-pts">+5 GreenPoints</div>
           <div style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 20, fontWeight: 700, marginTop: 4 }}>Bottle Recycled!</div>
+          <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 6 }}>
+            {MACHINES[machineId]?.name || machineId}
+          </div>
         </div>
         <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: "12px 20px", fontSize: 13, color: "var(--text2)", textAlign: "center" }}>
-          Machine: {machineId} · {new Date().toLocaleTimeString()}
+          {machineId} · {new Date().toLocaleTimeString()}
         </div>
         <button className="btn-primary" style={{ width: "100%", maxWidth: 300 }} onClick={() => { setState("options"); setCode(""); setError(""); }}>
           Recycle Another ♻️
@@ -119,18 +143,21 @@ export default function Scan({ addPoints }) {
             <input
               value={code}
               onChange={e => { setCode(e.target.value); setError(""); }}
+              onKeyDown={e => e.key === "Enter" && handleCode()}
               placeholder="e.g. GP-AHM-001"
               style={{ flex: 1, background: "var(--bg2)", border: `1px solid ${error ? "var(--red)" : "var(--border)"}`, borderRadius: 10, padding: "10px 14px", color: "var(--text)", fontSize: 14, fontFamily: "DM Sans, sans-serif", outline: "none" }}
             />
-            <button className="btn-primary" style={{ padding: "10px 16px", fontSize: 14 }} onClick={handleCode}>Go</button>
+            <button className="btn-primary" style={{ padding: "10px 16px", fontSize: 14 }} onClick={handleCode}>
+              Go
+            </button>
           </div>
           {error && <div style={{ fontSize: 12, color: "var(--red)", marginTop: 6 }}>{error}</div>}
           <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 8 }}>
-            Valid codes: GP-AHM-001 through GP-AHM-005
+            Available: GP-AHM-001, GP-AHM-002, GP-AHM-004
           </div>
         </div>
 
-        <button className="scan-option" style={{ opacity: 0.5 }}>
+        <button className="scan-option" style={{ opacity: 0.5, cursor: "not-allowed" }}>
           <div className="scan-icon-wrap">📶</div>
           <div>
             <div style={{ fontWeight: 600, fontSize: 15, color: "var(--text)" }}>NFC Tap</div>

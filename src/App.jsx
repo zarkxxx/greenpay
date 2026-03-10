@@ -47,6 +47,11 @@ function AppInner() {
     } else if (isDemoMode) {
       setPoints(2350);
       setBottles(47);
+      setRedeemedCoupons([
+        { id: "d1", title: "₹50 Off on Orders", brand: "Swiggy", cost: 500, code: "GP-SWIG-DEMO01", redeemedAt: "10 Mar 2026" },
+        { id: "d2", title: "Free Premium Paan", brand: "Mauli Paan", cost: 300, code: "GP-MAUL-DEMO02", redeemedAt: "9 Mar 2026" },
+        { id: "d3", title: "₹10 Cashback", brand: "UPI Cash", cost: 100, code: "GP-UPIC-DEMO03", redeemedAt: "8 Mar 2026" },
+      ]);
     }
   }, [profile, isDemoMode]);
 
@@ -55,14 +60,26 @@ function AppInner() {
     setBottles(b => b + 1);
   };
 
-  const redeemPoints = (cost, reward) => {
+  const redeemPoints = async (cost, reward) => {
     if (points >= cost) {
       setPoints(p => p - cost);
-      setRedeemedCoupons(c => [...c, {
-        ...reward,
-        redeemedAt: new Date().toLocaleDateString(),
-        code: `GP-${reward.brand.toUpperCase().slice(0, 4)}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
-      }]);
+      if (reward.category !== "donate") {
+        const code = `GP-${reward.brand.toUpperCase().slice(0, 4)}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+        setRedeemedCoupons(c => [{
+          ...reward,
+          redeemedAt: new Date().toLocaleDateString(),
+          code,
+        }, ...c]);
+      }
+      // Write redemption transaction to Firestore
+      if (user && !isDemoMode) {
+        try {
+          const { redeemPoints: redeemDB } = await import("./lib/db");
+          await redeemDB(user.uid, cost, `Redeemed: ${reward.title}`);
+        } catch (e) {
+          console.error("Failed to write redemption to Firestore:", e);
+        }
+      }
       return true;
     }
     return false;
@@ -72,6 +89,9 @@ function AppInner() {
     localStorage.removeItem("gp_demo_mode");
     await signOut();
     setActiveTab("home");
+    setPoints(0);
+    setBottles(0);
+    setRedeemedCoupons([]);
     setScreen("login");
   };
 
@@ -105,9 +125,10 @@ function AppInner() {
       case "home": return <Home points={points} bottles={bottles} setActiveTab={setActiveTab} user={currentUser} />;
       case "scan": return <Scan addPoints={addPoints} />;
       case "rewards": return <Rewards points={points} redeemPoints={redeemPoints} redeemedCoupons={redeemedCoupons} />;
+      case "coupons": return <Rewards points={points} redeemPoints={redeemPoints} redeemedCoupons={redeemedCoupons} defaultView="coupons" />;
       case "map": return <MapPage setActiveTab={setActiveTab} />;
       case "profile": return <Profile points={points} bottles={bottles} setActiveTab={setActiveTab} redeemedCoupons={redeemedCoupons} onLogout={handleLogout} user={currentUser} isDemoMode={isDemoMode} />;
-      case "wallet": return <Wallet points={points} setActiveTab={setActiveTab} userId={user?.uid} />;
+      case "wallet": return <Wallet points={points} setActiveTab={setActiveTab} userId={user?.uid} isDemoMode={isDemoMode} />;
       case "gamification": return <Gamification bottles={bottles} points={points} setActiveTab={setActiveTab} />;
       case "campaigns": return <Campaigns setActiveTab={setActiveTab} bottles={bottles} />;
       default: return <Home points={points} bottles={bottles} setActiveTab={setActiveTab} user={currentUser} />;

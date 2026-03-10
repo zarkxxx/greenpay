@@ -4,11 +4,11 @@ import { useAuth } from "../lib/AuthContext";
 import { db } from "../lib/firebase";
 import { collection, addDoc, getDocs, serverTimestamp, query, orderBy } from "firebase/firestore";
 
-export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
+export default function Rewards({ points, redeemPoints, redeemedCoupons, defaultView }) {
   const [cat, setCat] = useState("all");
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState(null);
-  const [view, setView] = useState("marketplace");
+  const [view, setView] = useState(defaultView || "marketplace");
   const [firestoreCoupons, setFirestoreCoupons] = useState([]);
 
   const { user } = useAuth();
@@ -16,6 +16,10 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
 
   const cats = ["all", "food", "shopping", "cash", "donate"];
   const filtered = rewards.filter(r => cat === "all" || r.category === cat);
+
+  useEffect(() => {
+    if (defaultView) setView(defaultView);
+  }, [defaultView]);
 
   useEffect(() => {
     if (user && !isDemoMode) {
@@ -37,11 +41,19 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
   };
 
   const handleRedeem = async (reward) => {
-    const ok = redeemPoints(reward.cost, reward);
+    const ok = await redeemPoints(reward.cost, reward);
     if (ok) {
       setModal(null);
+
+      // Donate category — no coupon, just toast
+      if (reward.category === "donate") {
+        showToast(`💚 Donated ${reward.cost} GP to NGO. Thank you!`);
+        return;
+      }
+
       const code = `GP-${reward.brand.toUpperCase().slice(0, 4)}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
       showToast(`🎉 Redeemed: ${reward.title}`);
+
       if (user && !isDemoMode) {
         try {
           const docRef = await addDoc(collection(db, "profiles", user.uid, "coupons"), {
@@ -89,7 +101,8 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
           {displayCoupons.length === 0 ? (
             <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text3)" }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>🎫</div>
-              <div>No coupons yet. Redeem rewards to get started.</div>
+              <div style={{ marginBottom: 20 }}>No coupons yet. Redeem rewards to get started.</div>
+              <button className="btn-primary" onClick={() => setView("marketplace")}>Browse Rewards</button>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -150,7 +163,7 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
                     style={{ width: "100%", opacity: points >= r.cost ? 1 : 0.5 }}
                     onClick={() => setModal(r)}
                   >
-                    Redeem
+                    {r.category === "donate" ? "Donate" : "Redeem"}
                   </button>
                 </div>
               </div>
@@ -171,6 +184,11 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
                 <div style={{ fontSize: 13, color: "var(--text2)" }}>{modal.brand}</div>
               </div>
             </div>
+            {modal.category === "donate" && (
+              <div style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 10, padding: 12, marginBottom: 16, fontSize: 13, color: "var(--text2)" }}>
+                💚 Your points will be converted to a donation to an environmental NGO. No coupon is issued.
+              </div>
+            )}
             <div style={{ background: "var(--bg2)", borderRadius: 12, padding: 16, marginBottom: 20 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                 <span style={{ color: "var(--text2)", fontSize: 14 }}>Cost</span>
@@ -178,11 +196,17 @@ export default function Rewards({ points, redeemPoints, redeemedCoupons }) {
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "var(--text2)", fontSize: 14 }}>Balance after</span>
-                <span style={{ fontWeight: 700 }}>{(points - modal.cost).toLocaleString()} GP</span>
+                <span style={{ fontWeight: 700, color: points - modal.cost < 0 ? "var(--red)" : "var(--text)" }}>
+                  {(points - modal.cost).toLocaleString()} GP
+                </span>
               </div>
             </div>
-            <button className="btn-primary" style={{ width: "100%", marginBottom: 10 }} onClick={() => handleRedeem(modal)}>
-              Confirm Redemption
+            <button
+              className="btn-primary"
+              style={{ width: "100%", marginBottom: 10, opacity: points >= modal.cost ? 1 : 0.5 }}
+              onClick={() => points >= modal.cost && handleRedeem(modal)}
+            >
+              {modal.category === "donate" ? "Confirm Donation" : "Confirm Redemption"}
             </button>
             <button className="btn-ghost" style={{ width: "100%" }} onClick={() => setModal(null)}>
               Cancel
