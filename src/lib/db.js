@@ -1,106 +1,49 @@
-import { supabase } from './supabase'
+import { db } from "./firebase";
+import {
+  doc, getDoc, updateDoc, collection,
+  addDoc, getDocs, query, orderBy,
+  limit, serverTimestamp, increment
+} from "firebase/firestore";
 
-// Add points and log transaction
-export async function addPoints(userId, points, label, machineId = null) {
-  // Insert transaction
-  const { error: txError } = await supabase
-    .from('transactions')
-    .insert({
-      user_id: userId,
-      type: 'earn',
-      label,
-      points,
-      machine_id: machineId
-    })
+export const getProfile = async (userId) => {
+  const snap = await getDoc(doc(db, "profiles", userId));
+  return snap.exists() ? snap.data() : null;
+};
 
-  if (txError) throw txError
+export const addPoints = async (userId, points, description = "Bottle recycled") => {
+  const ref = doc(db, "profiles", userId);
+  await updateDoc(ref, { points: increment(points), bottles: increment(1) });
+  await addDoc(collection(db, "profiles", userId, "transactions"), {
+    type: "earn",
+    points,
+    description,
+    createdAt: serverTimestamp(),
+  });
+};
 
-  // Update profile points and bottles
-  const { error: profileError } = await supabase.rpc('increment_points', {
-    user_id: userId,
-    pts: points,
-    btls: 1
-  })
+export const redeemPoints = async (userId, points, description = "Reward redeemed") => {
+  const ref = doc(db, "profiles", userId);
+  await updateDoc(ref, { points: increment(-points) });
+  await addDoc(collection(db, "profiles", userId, "transactions"), {
+    type: "redeem",
+    points: -points,
+    description,
+    createdAt: serverTimestamp(),
+  });
+};
 
-  if (profileError) throw profileError
-}
+export const getTransactions = async (userId) => {
+  const q = query(
+    collection(db, "profiles", userId, "transactions"),
+    orderBy("createdAt", "desc"),
+    limit(20)
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+};
 
-// Redeem points
-export async function redeemPoints(userId, cost, rewardTitle, rewardBrand) {
-  // Check balance first
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('points')
-    .eq('id', userId)
-    .single()
-
-  if (!profile || profile.points < cost) {
-    throw new Error('Insufficient points')
-  }
-
-  // Generate coupon code
-  const code = `GP-${rewardBrand.toUpperCase().slice(0, 4)}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
-
-  // Insert transaction
-  await supabase.from('transactions').insert({
-    user_id: userId,
-    type: 'redeem',
-    label: `Redeemed: ${rewardTitle}`,
-    points: -cost
-  })
-
-  // Insert coupon
-  const { data: coupon } = await supabase.from('coupons').insert({
-    user_id: userId,
-    brand: rewardBrand,
-    title: rewardTitle,
-    code,
-    cost,
-    expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-  }).select().single()
-
-  // Deduct points
-  await supabase.rpc('decrement_points', {
-    user_id: userId,
-    pts: cost
-  })
-
-  return coupon
-}
-
-// Fetch transactions
-export async function getTransactions(userId) {
-  const { data, error } = await supabase
-    .from('transactions')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(50)
-
-  if (error) throw error
-  return data
-}
-
-// Fetch coupons
-export async function getCoupons(userId) {
-  const { data, error } = await supabase
-    .from('coupons')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
-  return data
-}
-
-// Fetch leaderboard
-export async function getLeaderboard() {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, full_name, avatar_url, bottles')
-    .order('bottles', { ascending: false })
-    .limit(10)
-
-  if (error) throw error
-  return data
-}
+export const getLeaderboard = async () => {
+  const q = query(collection(db, "profiles"), orderBy("points", "desc"), limit(10));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+};

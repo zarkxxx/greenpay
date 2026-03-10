@@ -7,11 +7,12 @@ export default function Profile({ points, bottles, setActiveTab, redeemedCoupons
   const plastic = (bottles * 0.089).toFixed(1);
   const co2 = (bottles * 0.172).toFixed(1);
 
-  const name = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User";
+  const name = user?.name || user?.email?.split('@')[0] || "User";
   const email = user?.email || "";
-  const avatar = profile?.avatar_url || user?.user_metadata?.avatar_url;
+  const avatar = user?.avatar || null;
   const initials = name.charAt(0).toUpperCase();
-  const referralCode = `GP-${(user?.id || "").slice(0, 6).toUpperCase()}`;
+  const referralCode = `GP-${(user?.email || "").slice(0, 6).toUpperCase().replace(/[^A-Z0-9]/g, "")}`;
+
 
   const copyCode = () => {
     navigator.clipboard.writeText(referralCode).catch(() => {});

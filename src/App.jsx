@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "./lib/supabase";
+import { AuthProvider, useAuth } from "./lib/AuthContext";
 import Onboarding from "./pages/Onboarding";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -13,53 +13,43 @@ import Campaigns from "./pages/Campaigns";
 import "./index.css";
 
 export default function App() {
-  const [screen, setScreen] = useState("onboarding");
-  const [activeTab, setActiveTab] = useState("home");
-  const [user, setUser] = useState(null);
-  const [authChecked, setAuthChecked] = useState(false);
+  return (
+    <AuthProvider>
+      <AppInner />
+    </AuthProvider>
+  );
+}
 
-  // Demo mode state
-  const [points, setPoints] = useState(2350);
-  const [bottles, setBottles] = useState(47);
+function AppInner() {
+  const { user, loading, signOut, profile } = useAuth();
+  const isDemoMode = localStorage.getItem("gp_demo_mode") === "true";
+
+  const [screen, setScreen] = useState(() => {
+    const onboarded = localStorage.getItem("gp_onboarded");
+    return onboarded ? "login" : "onboarding";
+  });
+  const [activeTab, setActiveTab] = useState("home");
+  const [points, setPoints] = useState(0);
+  const [bottles, setBottles] = useState(0);
   const [notifications, setNotifications] = useState(3);
   const [redeemedCoupons, setRedeemedCoupons] = useState([]);
 
-  const isDemoMode = localStorage.getItem("gp_demo_mode") === "true";
-
   useEffect(() => {
-    // Check onboarding
-    const onboarded = localStorage.getItem("gp_onboarded");
-    if (!onboarded) {
-      setScreen("onboarding");
-    } else if (isDemoMode) {
-      setScreen("app");
-      setAuthChecked(true);
-    } else {
-      // Check Supabase session
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          setUser(session.user);
-          setScreen("app");
-        } else {
-          setScreen("login");
-        }
-        setAuthChecked(true);
-      });
-
-      // Listen for auth changes
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          setScreen("app");
-        } else if (!isDemoMode) {
-          setUser(null);
-          setScreen("login");
-        }
-      });
-
-      return () => subscription.unsubscribe();
+    if (!loading) {
+      if (user || isDemoMode) setScreen("app");
+      else if (localStorage.getItem("gp_onboarded")) setScreen("login");
     }
-  }, []);
+  }, [user, loading, isDemoMode]);
+  
+  useEffect(() => {
+    if (profile) {
+      setPoints(profile.points ?? 0);
+      setBottles(profile.bottles ?? 0);
+    } else if (isDemoMode) {
+      setPoints(2350);
+      setBottles(47);
+    }
+  }, [profile, isDemoMode]);
 
   const addPoints = (pts) => {
     setPoints(p => p + pts);
@@ -81,8 +71,7 @@ export default function App() {
 
   const handleLogout = async () => {
     localStorage.removeItem("gp_demo_mode");
-    await supabase.auth.signOut();
-    setUser(null);
+    await signOut();
     setActiveTab("home");
     setScreen("login");
   };
@@ -92,8 +81,17 @@ export default function App() {
     setScreen("login");
   };
 
+  if (loading && !isDemoMode) return <div style={{ background: "#080808", minHeight: "100vh" }} />;
   if (screen === "onboarding") return <Onboarding onDone={handleOnboardingDone} />;
-  if (screen === "login" || (!authChecked && !isDemoMode)) return <Login />;
+  if (screen === "login") return <Login />;
+
+  const demoUser = { name: "Demo User", email: "demo@greenpay.app", avatar: null };
+  const firebaseUser = user ? {
+    name: user.displayName || user.email,
+    email: user.email,
+    avatar: user.photoURL,
+  } : null;
+  const currentUser = isDemoMode ? demoUser : firebaseUser;
 
   const tabs = [
     { id: "home", icon: HomeIcon, label: "Home" },
@@ -102,19 +100,6 @@ export default function App() {
     { id: "map", icon: MapIcon, label: "Map" },
     { id: "profile", icon: UserIcon, label: "Profile" },
   ];
-
-  // Demo user object for mock mode
-  const demoUser = {
-    name: "Demo User",
-    email: "demo@greenpay.app",
-    avatar: null,
-  };
-
-  const currentUser = isDemoMode ? demoUser : {
-    name: user?.user_metadata?.full_name || user?.email || "User",
-    email: user?.email,
-    avatar: user?.user_metadata?.avatar_url,
-  };
 
   const renderTab = () => {
     switch (activeTab) {
@@ -132,9 +117,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <div className="app-content">
-        {renderTab()}
-      </div>
+      <div className="app-content">{renderTab()}</div>
       <nav className="bottom-nav">
         {tabs.map(tab => (
           <button
