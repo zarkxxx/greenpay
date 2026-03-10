@@ -68,9 +68,9 @@ export default function Wallet({ points, setActiveTab, userId }) {
                   {icons[tx.type] || "♻️"}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 500 }}>{tx.label}</div>
+                  <div style={{ fontSize: 14, fontWeight: 500 }}>{tx.description || "Transaction"}</div>
                   <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 2 }}>
-                    {new Date(tx.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    {tx.createdAt?.toDate ? tx.createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : "Just now"}
                   </div>
                 </div>
                 <div className={`tx-pts ${tx.points > 0 ? "positive" : "negative"}`}>
