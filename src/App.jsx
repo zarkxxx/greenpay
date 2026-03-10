@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "./lib/supabase";
 import Onboarding from "./pages/Onboarding";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -12,12 +13,53 @@ import Campaigns from "./pages/Campaigns";
 import "./index.css";
 
 export default function App() {
-  const [screen, setScreen] = useState("onboarding"); // onboarding | login | app
+  const [screen, setScreen] = useState("onboarding");
   const [activeTab, setActiveTab] = useState("home");
+  const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  // Demo mode state
   const [points, setPoints] = useState(2350);
   const [bottles, setBottles] = useState(47);
   const [notifications, setNotifications] = useState(3);
   const [redeemedCoupons, setRedeemedCoupons] = useState([]);
+
+  const isDemoMode = localStorage.getItem("gp_demo_mode") === "true";
+
+  useEffect(() => {
+    // Check onboarding
+    const onboarded = localStorage.getItem("gp_onboarded");
+    if (!onboarded) {
+      setScreen("onboarding");
+    } else if (isDemoMode) {
+      setScreen("app");
+      setAuthChecked(true);
+    } else {
+      // Check Supabase session
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          setUser(session.user);
+          setScreen("app");
+        } else {
+          setScreen("login");
+        }
+        setAuthChecked(true);
+      });
+
+      // Listen for auth changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          setScreen("app");
+        } else if (!isDemoMode) {
+          setUser(null);
+          setScreen("login");
+        }
+      });
+
+      return () => subscription.unsubscribe();
+    }
+  }, []);
 
   const addPoints = (pts) => {
     setPoints(p => p + pts);
@@ -27,14 +69,31 @@ export default function App() {
   const redeemPoints = (cost, reward) => {
     if (points >= cost) {
       setPoints(p => p - cost);
-      setRedeemedCoupons(c => [...c, { ...reward, redeemedAt: new Date().toLocaleDateString(), code: `GP-${reward.brand.toUpperCase().slice(0,4)}-${Math.random().toString(36).substr(2,6).toUpperCase()}` }]);
+      setRedeemedCoupons(c => [...c, {
+        ...reward,
+        redeemedAt: new Date().toLocaleDateString(),
+        code: `GP-${reward.brand.toUpperCase().slice(0, 4)}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+      }]);
       return true;
     }
     return false;
   };
 
-  if (screen === "onboarding") return <Onboarding onDone={() => setScreen("login")} />;
-  if (screen === "login") return <Login onLogin={() => setScreen("app")} />;
+  const handleLogout = async () => {
+    localStorage.removeItem("gp_demo_mode");
+    await supabase.auth.signOut();
+    setUser(null);
+    setActiveTab("home");
+    setScreen("login");
+  };
+
+  const handleOnboardingDone = () => {
+    localStorage.setItem("gp_onboarded", "true");
+    setScreen("login");
+  };
+
+  if (screen === "onboarding") return <Onboarding onDone={handleOnboardingDone} />;
+  if (screen === "login" || (!authChecked && !isDemoMode)) return <Login />;
 
   const tabs = [
     { id: "home", icon: HomeIcon, label: "Home" },
@@ -44,21 +103,32 @@ export default function App() {
     { id: "profile", icon: UserIcon, label: "Profile" },
   ];
 
+  // Demo user object for mock mode
+  const demoUser = {
+    name: "Demo User",
+    email: "demo@greenpay.app",
+    avatar: null,
+  };
+
+  const currentUser = isDemoMode ? demoUser : {
+    name: user?.user_metadata?.full_name || user?.email || "User",
+    email: user?.email,
+    avatar: user?.user_metadata?.avatar_url,
+  };
+
   const renderTab = () => {
     switch (activeTab) {
-      case "home": return <Home points={points} bottles={bottles} setActiveTab={setActiveTab} />;
+      case "home": return <Home points={points} bottles={bottles} setActiveTab={setActiveTab} user={currentUser} />;
       case "scan": return <Scan addPoints={addPoints} />;
       case "rewards": return <Rewards points={points} redeemPoints={redeemPoints} redeemedCoupons={redeemedCoupons} />;
       case "map": return <MapPage setActiveTab={setActiveTab} />;
-      case "profile": return <Profile points={points} bottles={bottles} setActiveTab={setActiveTab} redeemedCoupons={redeemedCoupons} notifications={notifications} onLogout={() => setScreen("login")} />;
+      case "profile": return <Profile points={points} bottles={bottles} setActiveTab={setActiveTab} redeemedCoupons={redeemedCoupons} notifications={notifications} onLogout={handleLogout} user={currentUser} isDemoMode={isDemoMode} />;
       case "wallet": return <Wallet points={points} setActiveTab={setActiveTab} />;
       case "gamification": return <Gamification bottles={bottles} setActiveTab={setActiveTab} />;
       case "campaigns": return <Campaigns setActiveTab={setActiveTab} />;
-      default: return <Home points={points} bottles={bottles} setActiveTab={setActiveTab} />;
+      default: return <Home points={points} bottles={bottles} setActiveTab={setActiveTab} user={currentUser} />;
     }
   };
-
-  const mainTabs = ["home", "scan", "rewards", "map", "profile"];
 
   return (
     <div className="app-shell">
